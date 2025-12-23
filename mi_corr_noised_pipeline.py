@@ -94,8 +94,8 @@ from sklearn.feature_selection import mutual_info_classif
 EPSILON_TOTAL = 1.0
 DELTA = 1e-5
 
-EPSILON_MI = 0.5
-EPSILON_CORR = 0.5
+EPSILON_MI = 0.4
+EPSILON_CORR = 0.4
 
 
 # =========================================================
@@ -114,13 +114,13 @@ def gaussian_sigma(epsilon, delta):
 # 3. DP Mutual Information
 # =========================================================
 
-def dp_mutual_information(X, y, epsilon, delta, number_of_sets):
+def dp_mutual_information(x, y, epsilon, delta, number_of_sets):
     """
     Computes DP Mutual Information using Gaussian mechanism
     """
     # Raw MI (never shared)
     mi_raw = mutual_info_classif(
-        X,
+        x,
         y,
         discrete_features="auto",
         n_neighbors=number_of_sets,
@@ -138,16 +138,16 @@ def dp_mutual_information(X, y, epsilon, delta, number_of_sets):
 # 4. DP Spearman Correlation
 # =========================================================
 
-def dp_spearman_correlations(X, target_feature, epsilon, delta):
+def dp_spearman_correlations(x, target_feature, epsilon, delta):
     """
     Computes DP Spearman correlations to the target feature
     """
     corr_raw = []
 
-    target_values = X[:, target_feature]
+    target_values = x[:, target_feature]
 
-    for j in range(X.shape[1]):
-        corr, _ = spearmanr(X[:, j], target_values)
+    for j in range(x.shape[1]):
+        corr, _ = spearmanr(x[:, j], target_values)
         if np.isnan(corr):
             corr = 0.0
         corr_raw.append(corr)
@@ -170,7 +170,7 @@ def dp_spearman_correlations(X, target_feature, epsilon, delta):
 
 def dp_feature_selection_pipeline(
     df,
-    X,
+    x,
     y,
     label_column,
     number_of_sets
@@ -191,7 +191,7 @@ def dp_feature_selection_pipeline(
     # Step 1: DP Mutual Information
     # -----------------------------------------
     mi_dp = dp_mutual_information(
-        X,
+        x,
         y,
         epsilon=EPSILON_MI,
         delta=DELTA,
@@ -207,7 +207,7 @@ def dp_feature_selection_pipeline(
     # Step 3: DP Spearman correlations
     # -----------------------------------------
     corr_dp = dp_spearman_correlations(
-        X,
+        x,
         target_feature=target_feature_idx,
         epsilon=EPSILON_CORR,
         delta=DELTA
@@ -235,7 +235,7 @@ def dp_feature_selection_pipeline(
 
 corr_df = dp_feature_selection_pipeline(
     df=df,
-    X=X,
+    x=x,
     y=y,
     label_column=label_column,
     number_of_sets=number_of_sets
