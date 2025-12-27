@@ -3,39 +3,17 @@ import numpy as np
 import pandas as pd
 from sklearn.feature_selection import mutual_info_classif
 
-# DP parameters
-epsilon_mi = 0.4
-epsilon_corr = 0.4
-delta = 1e-5
-#remaining 0.2 is for exponential mechanism
 
-def gaussian_sigma(epsilon, delta):
-    return np.sqrt(2 * np.log(1.25 / delta)) / epsilon
-
-
-def mi_for_all(df_name=df, lc=label_column, title='complete dataset',
-               epsilon=epsilon_mi, delta=delta):
-
+def mi_for_all(df_name = df, lc = label_column, title = 'complete dataset'):
     y = df_name.iloc[:, lc]
+    #print(f'label is {y}')
     x = df_name.drop(df_name.columns[lc], axis=1)
+    mi_scores = mutual_info_classif(x, y, discrete_features=True)
+    mi_scores= mi_scores / np.log(2)
 
-    mi_scores = mutual_info_classif(
-        x, y, discrete_features=True
-    )
+    mi_df = pd.DataFrame({"Feature": x.columns, "MI_Score": mi_scores}).sort_values(by="MI_Score", ascending=False)
 
-    mi_scores = mi_scores / np.log(2)
-
-    # DP Gaussian noise
-    sigma = gaussian_sigma(epsilon, delta)
-    mi_scores = mi_scores + np.random.normal(0, sigma, size=len(mi_scores))
-
-    mi_df = pd.DataFrame({
-        "Feature": x.columns,
-        "MI_Score": mi_scores
-    }).sort_values(by="MI_Score", ascending=False)
-
-    return x, y, mi_df
-
+    return x,y,mi_df
 
 x,y,mi_df= mi_for_all()
 
@@ -78,15 +56,6 @@ print(f"lowest_mi_data:{lowest_mi_data}")
 #lowest_mi_ranked = lowest_mi_data.rank(method='average').astype(int)
 
 correlations = x.corrwith(lowest_mi_data, method='spearman')
-
-# DP Gaussian noise 
-sigma_corr = gaussian_sigma(epsilon_corr, delta)
-correlations = correlations + np.random.normal(
-    0, sigma_corr, size=len(correlations)
-)
-
-# Optional clipping (post-processing, safe)
-correlations = correlations.clip(-1.0, 1.0)
 
 # Convert to DataFrame and sort
 corr_df = pd.DataFrame({
