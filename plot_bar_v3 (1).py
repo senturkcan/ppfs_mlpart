@@ -81,7 +81,8 @@ for i, dataset in enumerate(datasets):
     # Formatting
     ax.set_title(f'{dataset} Dataset', fontsize=11, fontweight='semibold', 
                 pad=8, loc='left')
-    ax.set_ylabel('Accuracy Change (%)', fontsize=10)
+    ax.set_ylabel('Balanced Accuracy Change (%)', fontsize=8)
+    ax.yaxis.set_label_coords(-0.07, 0.5)
     ax.set_xticks(x)
     ax.set_xticklabels(models, fontsize=9)
     ax.axhline(0, color='black', linewidth=1.2)
@@ -112,4 +113,3 @@ plt.subplots_adjust(top=0.91, hspace=0.4, bottom=0.05, left=0.1, right=0.95)
 
 plt.savefig('compact_bar_graphs_single_legend.png', dpi=300, bbox_inches='tight')
 plt.savefig('compact_bar_graphs_single_legend.pdf', bbox_inches='tight')
-plt.show()
